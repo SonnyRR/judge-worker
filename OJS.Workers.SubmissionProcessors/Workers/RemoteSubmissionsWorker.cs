@@ -175,12 +175,30 @@
 
             submission.StartedExecutionOn = result.StartedExecutionOn;
             submission.CompletedExecutionOn = result.CompletedExecutionOn;
-            submission.ExceptionType = result.Exception.ExceptionType ?? ExceptionType.None;
+            submission.ExceptionType = this.ParseExceptionType(result) ?? ExceptionType.None;
             submission.WorkerEndpoint = this.Location;
             throw new Exception(
                 result.Exception.Message,
                 new Exception($"Remote worker caught an unexpected error:" +
                 $"{Environment.NewLine}{result.Exception.StackTrace}"));
+        }
+
+        private ExceptionType? ParseExceptionType(RemoteSubmissionResult result)
+        {
+            string exceptionType = result.Exception.ExceptionType;
+
+            if (string.IsNullOrWhiteSpace(exceptionType))
+            {
+                return null;
+            }
+
+            if (Enum.TryParse(exceptionType, out ExceptionType parsedEnum) && Enum.IsDefined(typeof(ExceptionType), parsedEnum))
+            {
+                return parsedEnum;
+            }
+
+            result.Exception.Message = "The exception type received from the remote execution could not be parsed, please contact a developer.";
+            return ExceptionType.Remote;
         }
     }
 }

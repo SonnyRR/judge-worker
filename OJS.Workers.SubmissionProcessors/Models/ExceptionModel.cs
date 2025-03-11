@@ -8,6 +8,6 @@
 
         public string StackTrace { get; set; }
 
-        public ExceptionType? ExceptionType { get; set; }
+        public string ExceptionType { get; set; }
     }
 }
